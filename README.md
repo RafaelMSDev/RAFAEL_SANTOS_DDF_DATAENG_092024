@@ -56,8 +56,8 @@ import re
 from transformers import pipeline
 
 # Caminho para o arquivo CSV e o arquivo de saída CSV
-file_path = r"C:\Users\Moraes\Downloads\subset_data.csv"
-output_file_path = r"C:\Users\Moraes\Downloads\products_with_features.csv"
+file_path = r"C:\Users\Moraes\subset_data.csv"
+output_file_path = r"C:\Users\Moraes\products_with_features.csv"
 
 # Carregar o modelo de perguntas e respostas da Hugging Face
 qa_pipeline = pipeline("question-answering")
@@ -158,7 +158,7 @@ Então foi executado uma query para gerar um resultado para encontrarmos os valo
 
 Só quero deixar um comentário, que seguindo a documentação disponibilizada, não foi possível encontrar a fonte de dados diretamente na plataforma e para conseguir resolver essa situação, subi novamente o arquivo .CSV na plataforma para realizar a Query.
 
-## Item  5 - Sobre Data Apps
+## Item 5 - Sobre Data Apps
 
 Foi criado o ambiente com Streamlit integrado, e junto a isso também foi realizado uma análise dos dados anteriores utilizando EDA, onde é feito o upload do arquivo .CSV com os dados tratados nas etapas anteriores:
 
@@ -174,7 +174,7 @@ import numpy as np
 def main():
     st.title("EDA Streamlit App - Análise de Produtos")
     st.header("Upload seu arquivo CSV de dados")
-    
+
     # Adicionando uma chave única para o file_uploader
     data_file = st.file_uploader("Upload CSV", type=["csv"], key="uploader_1")
 
@@ -260,8 +260,6 @@ Ao tentar realizar a etapa bonus para gerar imagens dos produtos através de IA 
 
 ![Printbloqueio](./bloqueio.jpg)
 
-
-
 Código usado
 
 ```python
@@ -272,7 +270,7 @@ import requests
 import base64
 from io import BytesIO
 
-REPLICATE_API_KEY = '{token_key}'  
+REPLICATE_API_KEY = '{token_key}'
 REPLICATE_URL = 'https://api.replicate.com/v1/predictions'
 
 def generate_image_replicate(prompt):
@@ -288,7 +286,7 @@ def generate_image_replicate(prompt):
     }
 
     response = requests.post(REPLICATE_URL, headers=headers, json=data)
-    response.raise_for_status() 
+    response.raise_for_status()
 
     prediction_id = response.json()["id"]
 
@@ -300,11 +298,11 @@ def generate_image_replicate(prompt):
             break
         elif result["status"] == "failed":
             raise Exception("Falha na geração da imagem.")
-    
+
     image_url = result["output"][0]
     image_response = requests.get(image_url)
     image_response.raise_for_status()
-    
+
     return image_response.content
 
 def main():
@@ -317,24 +315,24 @@ def main():
         data = pd.read_csv(data_file)
         st.write("Visualização dos dados do produto:")
         st.write(data.head())
-        
+
         # Verificação de colunas essenciais presentes no CSV
-        expected_columns = ['Titulo', 'Product Description', 'category', 'material', 
-                            'receiver_design', 'hand_strap', 'RFID_technique', 'handmade', 
-                            'stitching', 'card_slots', 'cosmetic_mirror', 'kickstand_function', 
+        expected_columns = ['Titulo', 'Product Description', 'category', 'material',
+                            'receiver_design', 'hand_strap', 'RFID_technique', 'handmade',
+                            'stitching', 'card_slots', 'cosmetic_mirror', 'kickstand_function',
                             'space_amplification', 'color_options', 'compatibility']
         missing_columns = [col for col in expected_columns if col not in data.columns]
-        
+
         if missing_columns:
             st.error(f"As seguintes colunas estão ausentes no CSV: {', '.join(missing_columns)}")
             st.stop()
-        
+
         data.fillna('Não informado', inplace=True)
-        
+
         # Selecionar o produto para gerar a apresentação
         st.sidebar.header("Selecione o Produto para Apresentação")
         product_index = st.sidebar.selectbox("Escolha o produto", data.index)
-        
+
         if st.sidebar.button("Gerar Apresentação"):
             selected_product = data.iloc[product_index]
             product_info = {
@@ -344,14 +342,14 @@ def main():
                 "Material": selected_product['material'],
                 "Design do receptor": selected_product['receiver_design']
             }
-            
+
             # Gerar a imagem do produto
             image_prompt = f"Crie uma imagem representando um produto chamado '{product_info['Nome']}' com a descrição: {product_info['Descrição']}."
             st.write("Gerando imagem...")
             try:
                 image_data = generate_image_replicate(image_prompt)
                 image_filename = f"imagem_{product_info['Nome']}.png"
-                
+
                 # Mostrar a imagem gerada
                 st.image(image_data, caption=f"Imagem de {product_info['Nome']}")
             except Exception as e:
